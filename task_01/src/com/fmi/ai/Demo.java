@@ -1,22 +1,51 @@
 package com.fmi.ai;
 
+import java.util.Scanner;
 import java.util.Stack;
 
 public class Demo {
 	
-	private static final int BLOCK = 1;
-	private static final int PATH = 0;
+	private static final int BLOCK = 0;
+	private static final int PATH = 1;
+	
+	private static int matrixRows;
 	
 	public static void main(String[] args) {
 		
-		int[][] matrix = { {0, 0, 1, 1},
-						   {1, 0, 1, 1},
-						   {0, 0, 0, 0},
-						   {0, 0, 0, 1},
-						   {1, 0, 0, 1},
-						   {1, 1, 0, 1} };
+		Scanner sc = new Scanner(System.in);
 		
-		Stack<Point> path = findPath(matrix, new Point(0, 0), new Point(5, 2), new Stack<>());
+		do {
+			System.out.println("Enter matrix size [5 - 10]: ");
+			matrixRows = sc.nextInt();
+		} while (matrixRows < 5 || matrixRows > 10);
+	
+		int[][] matrix = new int[matrixRows][matrixRows];
+		
+		System.out.println("Enter matrix elements [0 - 1]: ");
+		
+		for (int i = 0; i < matrixRows; i++) {
+			for (int j = 0; j < matrixRows; j++) {
+				int element = 1;
+				do {
+					element = sc.nextInt();
+				} while (element != 0 && element != 1);
+				matrix[i][j] = element;
+			}
+		}
+		
+		print(matrix);
+		
+		int startX, startY;
+		System.out.println("Enter start point (x, y)");
+		startX = sc.nextInt();
+		startY = sc.nextInt();
+		
+		int endX, endY;
+		System.out.println("Enter end point (x, y)");
+		endX = sc.nextInt();
+		endY = sc.nextInt();
+		
+		Stack<Point> path = findPath(matrix, new Point(startX, startY), new Point(endX, endY), new Stack<>());
 		if (path != null && !path.isEmpty()) {
 			System.out.println("Path length is: " + path.size());
 			System.out.println("Path is: " + path);
@@ -30,7 +59,7 @@ public class Demo {
 	 * Store the path in a Stack in order to store the visited points
 	 */
 	private static Stack<Point> findPath(int[][] matrix, Point start, Point end, Stack<Point> path) {
-
+		
 		if (!path.contains(start)) {
 			path.push(start);
 		}
@@ -89,5 +118,15 @@ public class Demo {
 			result = pointX >= 0 && pointX < matrixX && pointY >= 0 && pointY < matrixY;
 		}
 		return result;
+	}
+	
+	private static void print(int[][] matrix) {
+		
+		for (int[] row : matrix) {
+			for (int col : row) {
+				System.out.print(col + " ");
+			}
+			System.out.println();
+		}
 	}
 }
