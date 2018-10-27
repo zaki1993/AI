@@ -1,4 +1,4 @@
-package com.fmi.ai;
+package task_01.com.fmi.ai;
 
 public final class Point {
 	
