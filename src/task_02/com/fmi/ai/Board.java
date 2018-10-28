@@ -1,7 +1,8 @@
 package task_02.com.fmi.ai;
 
-import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Scanner;
 import java.util.stream.IntStream;
 
@@ -9,6 +10,11 @@ public class Board implements Cloneable {
 
     private int[] state;
     private int dimension;
+    private Direction from;
+
+    private enum Direction {
+        LEFT, RIGHT, UP, DOWN
+    }
 
     public Board(int dimension) {
 
@@ -16,28 +22,33 @@ public class Board implements Cloneable {
         readStates(dimension);
     }
 
+    private Board(int[] state, int dimension, Direction from) {
+        init(dimension);
+        for (int i = 0; i < dimension * dimension; i++) {
+            this.state[i] = state[i];
+        }
+        this.from = from;
+    }
+
     /**
      * Used to create exact copy of the board
      */
     private Board(Board other) {
-
-        int dimension = other.getDimension();
-        init(dimension);
-        int[] state = other.getState();
-        for (int i = 0; i < dimension * dimension; i++) {
-            this.state[i] = state[i];
-        }
+        this(other.getState(), other.getDimension(), null);
     }
 
     @Override
     public String toString() {
 
         StringBuilder result = new StringBuilder();
+        int count = 0;
 
-        for(int i = 0; i < dimension * dimension; i++) {
+        for (int i = 0; i < dimension * dimension; i++) {
             result.append(state[i]).append(" ");
-            if (i % dimension == 0) {
+            count++;
+            if (count == dimension) {
                 result.append("\n");
+                count = 0;
             }
         }
 
@@ -52,7 +63,7 @@ public class Board implements Cloneable {
         if (obj == null) {
             result = false;
         } else {
-            if (obj.getClass() != Board.class){
+            if (obj.getClass() != Board.class) {
                 result = false;
             } else if (obj == this) {
                 result = true;
@@ -87,14 +98,10 @@ public class Board implements Cloneable {
     // and returns the board
     private Board swap(Board other, int i, int j) {
 
-        int temp = other.state[i];
+        int temp = other.state[j];
         other.state[j] = other.state[i];
         other.state[i] = temp;
         return other;
-    }
-
-    public void print(PrintStream out) {
-        out.println(toString());
     }
 
     public int getDimension() {
@@ -110,32 +117,23 @@ public class Board implements Cloneable {
      */
     public boolean isGoal() {
         return IntStream.range(0, dimension * dimension - 1)
-                        .allMatch(idx -> state[idx] == idx + 1);
+                .allMatch(idx -> state[idx] == idx + 1);
+    }
+
+    public String getDirection() {
+        return from != null ? from.toString() : "";
     }
 
     public int getManhattan() {               // sum of Manhattan distances between blocks and goal
         return IntStream.range(0, dimension * dimension)
-                        .filter(i -> state[i] != i + 1 && state[i] != 0)
-                        .map(i->getManhattan(state[i], i))
-                        .sum();
+                .filter(i -> state[i] != i + 1 && state[i] != 0)
+                .map(i -> getManhattan(state[i], i))
+                .sum();
         /*for (int i = 0; i < dimension * dimension; i++) {
             if (state[i] != i + 1 && state[i] != 0) {
                 sum += getManhattan(state[i], i);
             }
         }*/
-    }
-
-    public int getHamming() {
-        return (int) IntStream.range(0, dimension * dimension)
-                              .filter(i->state[i] != i + 1 && state[i] != 0)
-                              .count();
-        /*int count = 0;
-        for (int i = 0; i < dimension * dimension; i++) {
-            if (state[i] != i + 1 && state[i] != 0) {
-                count++;
-            }
-        }
-        return count;*/
     }
 
     // Returns all neighbors boards
@@ -144,38 +142,41 @@ public class Board implements Cloneable {
         int index = 0;
         boolean found = false;
         Board neighbor;
-        Queue<Board> q = new Queue<Board>();
+        Queue<Board> q = new LinkedList<>();
 
-        for (int i = 0; i < board.length; i++)    // search for empty block
-            if (board[i] == 0) {
+        for (int i = 0; i < state.length; i++) {
+            if (state[i] == 0) {
                 index = i;
                 found = true;
                 break;
             }
-        if (!found)  return null;
-
-        if (index / N != 0) {                      // if not first row
-            neighbor = new Board(board);
-            exch(neighbor, index, index - N);  // exchange with upper block
-            q.enqueue(neighbor);
+        }
+        if (!found) {
+            return null;
         }
 
-        if (index / N != (N - 1)) {               // if not last row
-            neighbor = new Board(board);
-            exch(neighbor, index, index + N);  // exchange with lower block
-            q.enqueue(neighbor);
+        if (index / dimension != 0) {
+            neighbor = new Board(state, dimension, Direction.UP);
+            swap(neighbor, index, index - dimension);
+            q.add(neighbor);
         }
 
-        if ((index % N) != 0) {                        // if not leftmost column
-            neighbor = new Board(board);
-            exch(neighbor, index, index - 1);  // exchange with left block
-            q.enqueue(neighbor);
+        if (index / dimension != (dimension - 1)) {
+            neighbor = new Board(state, dimension, Direction.DOWN);
+            swap(neighbor, index, index + dimension);
+            q.add(neighbor);
         }
 
-        if ((index % N) != N - 1) {                          // if not rightmost column
-            neighbor = new Board(board);
-            exch(neighbor, index, index + 1);  // exchange with left block
-            q.enqueue(neighbor);
+        if ((index % dimension) != 0) {
+            neighbor = new Board(state, dimension, Direction.LEFT);
+            swap(neighbor, index, index - 1);
+            q.add(neighbor);
+        }
+
+        if ((index % dimension) != dimension - 1) {
+            neighbor = new Board(state, dimension, Direction.RIGHT);
+            swap(neighbor, index, index + 1);
+            q.add(neighbor);
         }
 
         return q;
@@ -188,7 +189,7 @@ public class Board implements Cloneable {
 
     private void readStates(int size) {
 
-        try(Scanner sc = new Scanner(System.in)) {
+        try (Scanner sc = new Scanner(System.in)) {
 
             System.out.println("Enter board initial state: ");
             this.state = readState(sc, size);

@@ -6,7 +6,7 @@ public class Demo {
 
     public static void main(String[] args) throws UnsolvablePuzzleException {
 
-        try(Scanner sc = new Scanner(System.in)) {
+        try (Scanner sc = new Scanner(System.in)) {
             System.out.println("Enter board size: ");
             int size = sc.nextInt();
             Board board = new Board(size);
