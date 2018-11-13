@@ -58,11 +58,11 @@ public class Board {
     public void minConflicts() {
     	
     	List<Pair> conflicted = null;
-    	
+
     	do {
     		addRandomQueens(queens.length);
     		conflicted = runMinConflicts();
-    	} while (conflicted != null && !conflicted.isEmpty());   	
+    	} while (conflicted != null && !conflicted.isEmpty());
     	
     	// print result
     	buildBoard();
@@ -73,7 +73,7 @@ public class Board {
     	
     	List<Pair> conflicted = new ArrayList<>();
 		for (int i = 0; i < 5000; i++) {
-    		
+
     		// for each queen find the number of conflicts she is with the other queens
     		for (int j = 0; j < queens.length; j++) {
 
@@ -99,7 +99,7 @@ public class Board {
         			indexesOfConflicts[j] = new Pair(j, possibleConflicts);
         		}
         		Arrays.sort(indexesOfConflicts);
-        		
+
         		// if there are some minimal indexes pick random of them
         		List<Integer> equalConflictIndexes = findEqualConflictIndexes(indexesOfConflicts, indexesOfConflicts[0].getCol());
         		int minConflictsRandIdx = new Random().nextInt(equalConflictIndexes.size());
